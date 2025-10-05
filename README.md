@@ -69,3 +69,39 @@ Code
     limactl cp k8s-master:~/.kube/config ~/.kube/config
     kubectl get nodes
 This should show your master and worker nodes in a Ready state.
+
+
+To add Istio and Rook to your self-hosted Kubernetes cluster running on macOS with Lima, follow these steps after you've already set up the cluster with Calico:
+
+🧩 Step 1: Install Istio
+✅ Install istioctl on macOS
+Shellbrew install istioctlShow more lines
+✅ Deploy Istio inside the Lima VM
+SSH into the Lima VM:
+Shelllimactl shell kubernetesShow more lines
+Then inside the VM:
+Shellistioctl install --set profile=default -yShow more lines
+✅ Enable automatic sidecar injection
+Shellkubectl label namespace default istio-injection=enabledShow more lines
+✅ Verify Istio components
+Shellkubectl get pods -n istio-systemShow more lines
+You should see components like istiod, istio-ingressgateway, etc.
+
+🧩 Step 2: Install Rook (Ceph)
+✅ Clone Rook repo inside the Lima VM
+Shellgit clone --single-branch --branch master https://github.com/rook/rook.gitShow more lines
+✅ Apply Rook manifests
+Shellkubectl apply -f crds.yamlkubectl apply -f common.yamlkubectl apply -f csi-operator.yamlkubectl apply -f operator.yamlShow more lines
+✅ Deploy a Ceph cluster
+Shellkubectl apply -f cluster.yamlShow more lines
+✅ Verify Rook components
+Shellkubectl get pods -n rook-cephShow more lines
+You should see pods like rook-ceph-operator, rook-ceph-mon, rook-ceph-osd, etc.
+
+🧪 Optional: Create a StorageClass
+To use Rook Ceph for persistent volumes:
+Shellkubectl apply -f storageclass.yamlShow more lines
+Then test with a PVC:
+YAMLapiVersion: v1kind: PersistentVolumeClaimmetadata:  name: test-pvcspec:  accessModes:    - ReadWriteOnce  resources:    requests:      storage: 1Gi  storageClassName: rook-ceph-blockShow more lines
+
+Would you like a script that automates all these steps or a .zip package with all the manifests and instructions?
