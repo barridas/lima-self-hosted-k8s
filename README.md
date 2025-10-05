@@ -36,6 +36,7 @@ Code
 
         sudo modprobe overlay
         sudo modprobe br_netfilter
+        sudo modprobe nf_conntrack
         echo "overlay" | sudo tee /etc/modules-load.d/containerd.conf
         echo "br_netfilter" | sudo tee -a /etc/modules-load.d/containerd.conf
         echo "net.bridge.bridge-nf-call-iptables = 1" | sudo tee /etc/sysctl.d/k8s.conf
