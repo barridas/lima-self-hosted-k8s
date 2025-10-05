@@ -3,32 +3,33 @@
 Steps to set up a self-hosted K8s cluster on Mac with Lima:
 Install Lima.
 Install Lima using Homebrew:
-Code
 
     brew install lima
 Create Lima VMs.
-Define and create one or more Lima VMs. You can create a single VM for a control plane and additional VMs for worker nodes. For example, to create an Ubuntu VM:
-Code
+Define and create one or more Lima VMs. You can create a single VM for a control plane and additional VMs for worker nodes. For example, to create an almalinux-10 VM:
 
-    limactl start --name=k8s-master template://ubuntu
-    limactl start --name=k8s-worker-1 template://ubuntu
+    limactl start --name=k8s-master template://almalinux-10
+    limactl start --name=k8s-worker-1 template://almalinux-10
 Access Lima VMs.
 Access the shell of your Lima VMs:
-Code
 
     limactl shell k8s-master
 Prepare VMs for Kubernetes.
 Within each VM, perform the following: Disable swap.
-Code
 
         sudo swapoff -a
         sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
 Install container runtime (e.g., containerd):
-Code
 
-        sudo apt update
-        sudo apt install -y containerd
+        sudo dnf update -y
+        sudo dnf install -y containerd
         sudo systemctl enable --now containerd
+Configure containerd with systemd cgroup driver (recommended for Kubernetes)
+
+        sudo mkdir -p /etc/containerd
+        containerd config default | sudo tee /etc/containerd/config.toml    
+        sudo sed -i 's/SystemdCgroup = false/SystemdCgroup = true/' /etc/containerd/config.toml
+
 Configure kernel modules and sysctl parameters.
 Add necessary modules and parameters for Kubernetes networking.
 Code
@@ -47,9 +48,9 @@ Code
     sudo apt-get update && sudo apt-get install -y apt-transport-https ca-certificates curl
     curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-archive-keyring.gpg
     echo "deb [signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
-    sudo apt-get update
-    sudo apt-get install -y kubelet kubeadm kubectl
-    sudo apt-mark hold kubelet kubeadm kubectl
+    sudo dnf update
+    sudo dnf install -y kubelet kubeadm kubectl
+    sudo dnf hold kubelet kubeadm kubectl
 Initialize the Kubernetes control plane (on the master VM only):
 Code
 
@@ -69,39 +70,3 @@ Code
     limactl cp k8s-master:~/.kube/config ~/.kube/config
     kubectl get nodes
 This should show your master and worker nodes in a Ready state.
-
-
-To add Istio and Rook to your self-hosted Kubernetes cluster running on macOS with Lima, follow these steps after you've already set up the cluster with Calico:
-
-🧩 Step 1: Install Istio
-✅ Install istioctl on macOS
-Shellbrew install istioctlShow more lines
-✅ Deploy Istio inside the Lima VM
-SSH into the Lima VM:
-Shelllimactl shell kubernetesShow more lines
-Then inside the VM:
-Shellistioctl install --set profile=default -yShow more lines
-✅ Enable automatic sidecar injection
-Shellkubectl label namespace default istio-injection=enabledShow more lines
-✅ Verify Istio components
-Shellkubectl get pods -n istio-systemShow more lines
-You should see components like istiod, istio-ingressgateway, etc.
-
-🧩 Step 2: Install Rook (Ceph)
-✅ Clone Rook repo inside the Lima VM
-Shellgit clone --single-branch --branch master https://github.com/rook/rook.gitShow more lines
-✅ Apply Rook manifests
-Shellkubectl apply -f crds.yamlkubectl apply -f common.yamlkubectl apply -f csi-operator.yamlkubectl apply -f operator.yamlShow more lines
-✅ Deploy a Ceph cluster
-Shellkubectl apply -f cluster.yamlShow more lines
-✅ Verify Rook components
-Shellkubectl get pods -n rook-cephShow more lines
-You should see pods like rook-ceph-operator, rook-ceph-mon, rook-ceph-osd, etc.
-
-🧪 Optional: Create a StorageClass
-To use Rook Ceph for persistent volumes:
-Shellkubectl apply -f storageclass.yamlShow more lines
-Then test with a PVC:
-YAMLapiVersion: v1kind: PersistentVolumeClaimmetadata:  name: test-pvcspec:  accessModes:    - ReadWriteOnce  resources:    requests:      storage: 1Gi  storageClassName: rook-ceph-blockShow more lines
-
-Would you like a script that automates all these steps or a .zip package with all the manifests and instructions?
