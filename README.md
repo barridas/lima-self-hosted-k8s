@@ -48,13 +48,14 @@ Code
         sudo dnf update -y
         sudo dnf install -y curl gpg
         cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
-[kubernetes]
-name=Kubernetes
-baseurl=https://pkgs.k8s.io/core:/stable:/v1.34/rpm/
-enabled=1
-gpgcheck=1
-gpgkey=https://pkgs.k8s.io/core:/stable:/v1.34/rpm/repodata/repomd.xml.key
-EOF
+        [kubernetes]
+        name=Kubernetes
+        baseurl=https://pkgs.k8s.io/core:/stable:/v1.34/rpm/
+        enabled=1
+        gpgcheck=1
+        gpgkey=https://pkgs.k8s.io/core:/stable:/v1.34/rpm/repodata/repomd.xml.key
+        EOF
+        
         sudo dnf install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
 
         sudo tee -a /etc/dnf/dnf.conf <<EOF
