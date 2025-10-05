@@ -45,12 +45,26 @@ Install kubeadm, kubelet, and kubectl:
 On all VMs (master and workers):
 Code
 
-    sudo apt-get update && sudo apt-get install -y apt-transport-https ca-certificates curl
-    curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-archive-keyring.gpg
-    echo "deb [signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
-    sudo dnf update
-    sudo dnf install -y kubelet kubeadm kubectl
-    sudo dnf hold kubelet kubeadm kubectl
+        sudo dnf update -y
+        sudo dnf install -y curl gpg
+        sudo tee /etc/yum.repos.d/kubernetes.repo <<EOF
+[kubernetes]
+name=Kubernetes
+baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-aarch64
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg
+       https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+EOF       
+        sudo dnf install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
+
+        sudo tee -a /etc/dnf/dnf.conf <<EOF
+        exclude=kubelet kubeadm kubectl
+        EOF
+        sudo systemctl enable --now kubelet
+
+
 Initialize the Kubernetes control plane (on the master VM only):
 Code
 
