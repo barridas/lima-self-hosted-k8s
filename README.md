@@ -60,6 +60,7 @@ Choose a CNI plugin (e.g., Flannel, Calico) and deploy it. For Flannel:
 Code
 
     kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
+    # For Calico kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.27.0/manifests/calico.yaml
 Join worker nodes to the cluster (on worker VMs):
 Use the kubeadm join command obtained from the master node's initialization output. Verify the cluster.
 On your Mac, outside the Lima VMs, ensure kubectl is configured to connect to your cluster. You might need to copy the kubeconfig file from the master VM to your ~/.kube/config directory on your Mac.
