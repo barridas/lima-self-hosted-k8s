@@ -1,31 +1,29 @@
 # lima-self-hosted-k8s
 
-Steps to set up a self-hosted K8s cluster on Mac with Lima:
-Install Lima.
-Install Lima using Homebrew:
+Steps to set up a self-hosted K8s cluster on Mac with Lima. Install Lima using Homebrew:
 
     brew install lima
     
-Create Lima VMs.
-Define and create one or more Lima VMs. You can create a single VM for a control plane and additional VMs for worker nodes. For example, to create an almalinux-10 VM:
+Create Lima VMs. Define and create one or more Lima VMs. You can create a single VM for a control plane and additional VMs for worker nodes. For example, to create an almalinux-10 VM:
 
     limactl start --name=k8s-master template://almalinux-10
     limactl start --name=k8s-worker-1 template://almalinux-10
     
-Access Lima VMs.
 Access the shell of your Lima VMs:
 
     limactl shell k8s-master
-Prepare VMs for Kubernetes.
-Within each VM, perform the following: Disable swap.
+    
+Prepare VMs for Kubernetes. Within each VM, perform the following:
 
         sudo swapoff -a
         sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
+        
 Install container runtime (e.g., containerd):
 
         sudo dnf update -y
         sudo dnf install -y containerd
         sudo systemctl enable --now containerd
+        
 Configure containerd with systemd cgroup driver (recommended for Kubernetes)
 
         sudo mkdir -p /etc/containerd
