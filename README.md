@@ -28,7 +28,15 @@ Configure containerd with systemd cgroup driver (recommended for Kubernetes)
 
         sudo mkdir -p /etc/containerd
         containerd config default | sudo tee /etc/containerd/config.toml    
-        sudo sed -i 's/SystemdCgroup = false/SystemdCgroup = true/' /etc/containerd/config.toml
+        sudo vi /etc/containerd/config.toml
+        
+        ## You need to enable the SystemdCgroup(=true) flag inside the section: [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]"
+        #[plugins.'io.containerd.grpc.v1.cri']
+        #SystemdCgroup = true
+        ## Restart the containerd-service and then the kubelet-service or reboot your machine and then it should work as expected.
+
+        sudo vi /etc/hosts  ## set the fqdn correctly
+        ##https://devopscube.com/setup-kubernetes-cluster-kubeadm/l
 
 Configure kernel modules and sysctl parameters.
 Add necessary modules and parameters for Kubernetes networking.
@@ -74,14 +82,6 @@ nf_conntrack_ipv4
 
 
 Initialize the Kubernetes control plane (on the master VM only):
-    sudo vi /etc/containerd/config.toml
-    ## You need to enable the SystemdCgroup(=true) flag inside the section: [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]"
-    #[plugins.'io.containerd.grpc.v1.cri']
-    #SystemdCgroup = true
-    ## Restart the containerd-service and then the kubelet-service or reboot your machine and then it should work as expected.
-
-    sudo vi /etc/hosts  ## set the fqdn correctly
-    ##https://devopscube.com/setup-kubernetes-cluster-kubeadm/
     sudo kubeadm init --pod-network-cidr=10.244.0.0/16 # Use a suitable CIDR for your CNI
 Follow the instructions provided by kubeadm init to configure kubectl for your user and to get the kubeadm join command for worker nodes.
 Deploy a Container Network Interface (CNI) plugin (on the master VM):
