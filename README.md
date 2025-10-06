@@ -5,11 +5,13 @@ Install Lima.
 Install Lima using Homebrew:
 
     brew install lima
+    
 Create Lima VMs.
 Define and create one or more Lima VMs. You can create a single VM for a control plane and additional VMs for worker nodes. For example, to create an almalinux-10 VM:
 
     limactl start --name=k8s-master template://almalinux-10
     limactl start --name=k8s-worker-1 template://almalinux-10
+    
 Access Lima VMs.
 Access the shell of your Lima VMs:
 
