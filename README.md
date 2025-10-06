@@ -36,10 +36,9 @@ Configure containerd with systemd cgroup driver (recommended for Kubernetes)
         ## Restart the containerd-service and then the kubelet-service or reboot your machine and then it should work as expected.
 
         sudo vi /etc/hosts  ## set the fqdn correctly
-        ##https://devopscube.com/setup-kubernetes-cluster-kubeadm/l
+        ##https://devopscube.com/setup-kubernetes-cluster-kubeadm/
 
-Configure kernel modules and sysctl parameters.
-Add necessary modules and parameters for Kubernetes networking.
+Configure kernel modules and sysctl parameters. Add necessary modules and parameters for Kubernetes networking.
 Code
 
         sudo modprobe overlay
@@ -50,9 +49,8 @@ Code
         echo "net.bridge.bridge-nf-call-iptables = 1" | sudo tee /etc/sysctl.d/k8s.conf
         echo "net.ipv4.ip_forward = 1" | sudo tee -a /etc/sysctl.d/k8s.conf
         sudo sysctl --system
-Install kubeadm, kubelet, and kubectl:
-On all VMs (master and workers):
-Code
+        
+Install kubeadm, kubelet, and kubectl. On all VMs (master and workers):
 
         sudo dnf update -y
         sudo dnf install -y curl gpg
@@ -74,27 +72,28 @@ Code
 
 edit the file /etc/modules (or create a new file in /etc/modules-load.d) containing names of required ones
 
-ip_vs
-ip_vs_rr
-ip_vs_wrr
-ip_vs_sh
-nf_conntrack_ipv4
+    ip_vs
+    ip_vs_rr
+    ip_vs_wrr
+    ip_vs_sh
+    nf_conntrack_ipv4
 
 
 Initialize the Kubernetes control plane (on the master VM only):
     sudo kubeadm init --pod-network-cidr=10.244.0.0/16 # Use a suitable CIDR for your CNI
+
 Follow the instructions provided by kubeadm init to configure kubectl for your user and to get the kubeadm join command for worker nodes.
-Deploy a Container Network Interface (CNI) plugin (on the master VM):
-Choose a CNI plugin (e.g., Flannel, Calico) and deploy it. For Flannel:
-Code
+Deploy a Container Network Interface (CNI) plugin (on the master VM). Choose a CNI plugin (e.g., Flannel, Calico) and deploy it. For Flannel:
 
     kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
     # For Calico kubectl apply -f https://raw.githubusercontent.com/schnell18/vCluster/refs/heads/libvirt/kubernetes/provision/roles/kube-master/templates/calico.yaml
+    
 Join worker nodes to the cluster (on worker VMs):
 Use the kubeadm join command obtained from the master node's initialization output. Verify the cluster.
+
 On your Mac, outside the Lima VMs, ensure kubectl is configured to connect to your cluster. You might need to copy the kubeconfig file from the master VM to your ~/.kube/config directory on your Mac.
-Code
 
     limactl cp k8s-master:~/.kube/config ~/.kube/config
     kubectl get nodes
+    
 This should show your master and worker nodes in a Ready state.
